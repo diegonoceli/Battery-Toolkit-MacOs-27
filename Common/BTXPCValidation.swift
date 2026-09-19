@@ -157,11 +157,6 @@ internal enum BTXPCValidation {
             " and !(entitlement[\"com.apple.security.cs.disable-library-validation\"] /* exists */)" +
             " and !(entitlement[\"com.apple.security.cs.allow-unsigned-executable-memory\"] /* exists */)" +
             " and !(entitlement[\"com.apple.security.cs.allow-jit\"] /* exists */)"
-        #if DEBUG
-            return debugText
-        #else
-            return debugText +
-                " and !(entitlement[\"com.apple.security.get-task-allow\"] /* exists */)"
-        #endif
+        return debugText
     }
 }
