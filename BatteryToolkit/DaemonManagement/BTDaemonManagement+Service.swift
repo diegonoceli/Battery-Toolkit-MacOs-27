@@ -68,7 +68,7 @@ internal extension BTDaemonManagement {
             let appService = SMAppService.daemon(
                 plistName: self.daemonServicePlist
             )
-            guard appService.status == .enabled else {
+            guard self.registered(status: appService.status) else {
                 return
             }
 
@@ -76,13 +76,10 @@ internal extension BTDaemonManagement {
             
             do {
                 try await appService.unregister()
-                assert(!self.registered(status: appService.status))
             } catch {
                 os_log(
                     "Daemon service unregistering failed, error: \(error, privacy: .public)), status: \(appService.status.rawValue)"
                 )
-                
-                throw BTError.unknown
             }
         }
 

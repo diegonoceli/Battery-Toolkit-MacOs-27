@@ -6,9 +6,20 @@
 import BTPreprocessor
 import Foundation
 import os.log
+import ServiceManagement
 
 internal enum BTDaemonManagement {
     @BTBackgroundActor static func start() async -> BTDaemonManagement.Status {
+        if #available(macOS 13.0, *) {
+            let appService = SMAppService.daemon(
+                plistName: "\(BT_DAEMON_ID).plist"
+            )
+            if appService.status != .enabled {
+                os_log("SMAppService not enabled, registering daemon")
+                return await self.Service.register()
+            }
+        }
+
         let daemonId = try? await BTDaemonXPCClient.getUniqueId()
         guard self.daemonUpToDate(daemonId: daemonId) else {
             if #available(macOS 13.0, *) {

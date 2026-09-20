@@ -10,13 +10,44 @@ import os.log
 @MainActor
 internal final class BTAppDelegate: NSObject, NSApplicationDelegate {
     private var menuBarExtraItem: NSStatusItem?
+    private var settingsWindowController: NSWindowController?
     @IBOutlet private var menuBarExtraMenu: NSMenu!
 
     @IBOutlet private var settingsItem: NSMenuItem!
     @IBOutlet private var disableBackgroundItem: NSMenuItem!
     @IBOutlet private var commandsMenuItem: NSMenuItem!
 
+    func showSettingsWindow() {
+        BTAccessoryMode.deactivate()
+        if self.settingsWindowController == nil {
+            let storyboard = NSStoryboard(name: "Settings", bundle: nil)
+            self.settingsWindowController = storyboard.instantiateInitialController() as? NSWindowController
+        }
+        self.settingsWindowController?.window?.center()
+        self.settingsWindowController?.showWindow(self)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        self.showSettingsWindow()
+        return true
+    }
+
     func applicationDidFinishLaunching(_: Notification) {
+        let image = NSImage(
+            named: NSImage.Name("ExtraItemIcon")
+        )
+        image?.isTemplate = true
+        
+        let extraItem = NSStatusBar.system.statusItem(
+            withLength: NSStatusItem.squareLength
+        )
+        extraItem.button?.image = image
+        extraItem.menu = self.menuBarExtraMenu
+        self.menuBarExtraItem = extraItem
+
+        self.showSettingsWindow()
+
         Task {
             let status = await BTActions.startDaemon()
             await self.daemonStatusHandler(status: status)
@@ -73,18 +104,6 @@ internal final class BTAppDelegate: NSObject, NSApplicationDelegate {
                 self.disableBackgroundItem.isEnabled = true
                 self.settingsItem.isEnabled = true
                 self.commandsMenuItem.isHidden = false
-                
-                let image = NSImage(
-                    named: NSImage.Name("ExtraItemIcon")
-                )
-                image?.isTemplate = true
-                
-                let extraItem = NSStatusBar.system.statusItem(
-                    withLength: NSStatusItem.squareLength
-                )
-                extraItem.button?.image = image
-                extraItem.menu = self.menuBarExtraMenu
-                self.menuBarExtraItem = extraItem
                 
                 if !NSApp.isActive {
                     BTAccessoryMode.activate()

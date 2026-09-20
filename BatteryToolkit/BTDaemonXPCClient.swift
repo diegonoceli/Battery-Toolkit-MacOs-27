@@ -20,17 +20,48 @@ internal enum BTDaemonXPCClient {
         connect.invalidate()
     }
 
+    private final class SafeContinuation<T: Sendable>: @unchecked Sendable {
+        private var continuation: CheckedContinuation<T, any Error>?
+        private let lock = NSLock()
+
+        init(_ continuation: CheckedContinuation<T, any Error>) {
+            self.continuation = continuation
+        }
+
+        func resume(returning value: T) {
+            lock.lock()
+            defer { lock.unlock() }
+            continuation?.resume(returning: value)
+            continuation = nil
+        }
+
+        func resume(throwing error: any Error) {
+            lock.lock()
+            defer { lock.unlock() }
+            continuation?.resume(throwing: error)
+            continuation = nil
+        }
+    }
+
     static func getUniqueId() async throws -> Data {
         try await withCheckedThrowingContinuation { continuation in
-            self.executeDaemonRetry(continuation: continuation) { daemon in
+            let safe = SafeContinuation(continuation)
+
+            DispatchQueue.global().asyncAfter(deadline: .now() + 2.0) {
+                safe.resume(throwing: BTError.commFailed)
+            }
+
+            self.executeDaemon(command: { daemon in
                 daemon.getUniqueId { data in
                     guard let data = data else {
-                        continuation.resume(throwing: BTError.malformedData)
+                        safe.resume(throwing: BTError.malformedData)
                         return
                     }
 
-                    continuation.resume(returning: data)
+                    safe.resume(returning: data)
                 }
+            }) { error in
+                safe.resume(throwing: BTError.commFailed)
             }
         }
     }
