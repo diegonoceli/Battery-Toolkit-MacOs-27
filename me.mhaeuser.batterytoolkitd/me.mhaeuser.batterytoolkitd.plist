@@ -11,6 +11,8 @@
 	</dict>
 	<key>BundleProgram</key>
 	<string>Contents/Library/LaunchServices/me.mhaeuser.batterytoolkitd</string>
+	<key>AssociatedBundleIdentifiers</key>
+	<string>me.mhaeuser.BatteryToolkit</string>
 	<key>Label</key>
 	<string>me.mhaeuser.batterytoolkitd</string>
 	<key>RunAtLoad</key>

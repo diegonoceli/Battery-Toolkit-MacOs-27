@@ -279,7 +279,7 @@ internal enum BTPowerEvents {
         let unlimitedPower = self.drawingUnlimitedPower()
         self.unlimitedPower = unlimitedPower
 
-        if unlimitedPower {
+        if unlimitedPower || BTPowerState.isChargingDisabled() {
             let success = self.registerPercentChangedHandler()
             if !success {
                 os_log("Failed to register percent changed handler")
