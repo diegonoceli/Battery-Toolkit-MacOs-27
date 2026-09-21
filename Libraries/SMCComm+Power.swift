@@ -60,7 +60,7 @@ public extension SMCComm {
                     bytes: self.chargeKeys[chargeKey].offBytes
                 )
             } else {
-                return true
+                return self.disablePowerAdapter()
             }
         }
 
@@ -76,8 +76,16 @@ public extension SMCComm {
 
                 return value != self.chargeKeys[chargeKey].onBytes
             } else {
-                return false
+                return self.isPowerAdapterDisabled()
             }
+        }
+
+        static func isPowerAdapterConnected() -> Bool {
+            let value = SMCComm.readKey(
+                key: SMCComm.Key("A", "C", "C", "P"),
+                dataSize: 1
+            )
+            return value?.first == 1
         }
 
         static func enablePowerAdapter() -> Bool {

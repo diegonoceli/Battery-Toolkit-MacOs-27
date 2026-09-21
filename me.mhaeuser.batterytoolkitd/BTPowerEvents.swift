@@ -267,10 +267,11 @@ internal enum BTPowerEvents {
     private static func drawingUnlimitedPower() -> Bool {
         //
         // macOS may falsely report drawing unlimited power when the power
-        // adapter is actually disabled.
+        // adapter is actually disabled. Conversely, when charging is disabled
+        // on Apple Silicon via adapter inhibition, check if the AC cable is physically present.
         //
         return !BTPowerState.isPowerAdapterDisabled() &&
-            IOPSPrivate.DrawingUnlimitedPower()
+            (IOPSPrivate.DrawingUnlimitedPower() || (SMCComm.Power.isPowerAdapterConnected() && BTPowerState.isChargingDisabled()))
     }
 
     private static func handleLimitedPowerGuarded() {
