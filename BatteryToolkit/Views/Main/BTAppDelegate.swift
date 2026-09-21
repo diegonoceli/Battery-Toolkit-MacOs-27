@@ -101,6 +101,7 @@ internal final class BTAppDelegate: NSObject, NSApplicationDelegate {
 
             do {
                 try await BTDaemonXPCClient.isSupported()
+                try? await BTActions.enablePowerAdapter()
                 self.disableBackgroundItem.isEnabled = true
                 self.settingsItem.isEnabled = true
                 self.commandsMenuItem.isHidden = false
