@@ -60,7 +60,7 @@ public extension SMCComm {
                     bytes: self.chargeKeys[chargeKey].offBytes
                 )
             } else {
-                return self.disablePowerAdapter()
+                return true
             }
         }
 
@@ -76,7 +76,7 @@ public extension SMCComm {
 
                 return value != self.chargeKeys[chargeKey].onBytes
             } else {
-                return self.isPowerAdapterDisabled()
+                return false
             }
         }
 
